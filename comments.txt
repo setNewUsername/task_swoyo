@@ -1,0 +1,11 @@
+server flags:
+-d <storage method> 
+
+storage methods: 
+    storage_local - default
+
+    storage_db
+
+-p <port number>
+
+8080 port - default
