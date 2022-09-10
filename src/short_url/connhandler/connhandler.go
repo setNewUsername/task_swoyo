@@ -8,12 +8,16 @@ import (
 	"strings"
 )
 
+//contains information about server host/port etc.
+
 type ConnectionHandler struct {
 	Protocol     string
 	Host         string
 	Port         int
 	DataProvider idataprovider.IDataProvider
 }
+
+//Server interface implementation ServeHTTP, works with POST, GET requests
 
 func (ConnHand ConnectionHandler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	switch request.Method {
@@ -32,6 +36,8 @@ func (ConnHand ConnectionHandler) ServeHTTP(writer http.ResponseWriter, request 
 	}
 }
 
+// handler for POST requests
+
 func (ConnHand ConnectionHandler) ServePOST(writer http.ResponseWriter, request *http.Request) {
 	UrlBuffer := make([]byte, 2048)
 	request.Body.Read(UrlBuffer)
@@ -46,6 +52,8 @@ func (ConnHand ConnectionHandler) ServePOST(writer http.ResponseWriter, request 
 
 	writer.Write([]byte(ConnHand.Protocol + "://" + ConnHand.Host + ":" + strconv.Itoa(ConnHand.Port) + "/" + Token))
 }
+
+//handler for GET requests
 
 func (ConnHand ConnectionHandler) ServeGET(writer http.ResponseWriter, request *http.Request) {
 	Token := strings.ReplaceAll(request.URL.Path, "/", "")

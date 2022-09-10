@@ -16,6 +16,7 @@ import (
 	"main/connhandler"
 	"main/remotedataprovider"
 	"main/idataprovider"
+	"math/rand"
 )
 
 //server functions
@@ -78,6 +79,8 @@ func CreateRemoteDataProviderInstance() remotedataprovider.RemoteDataProvider {
 //server functions
 
 func main() {
+	rand.Seed(time.Now().UnixNano())
+
 	var DataProvider idataprovider.IDataProvider
 
 	var inputOption string = "none"

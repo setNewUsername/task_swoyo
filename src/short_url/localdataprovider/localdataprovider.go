@@ -6,11 +6,18 @@ import (
 	"time"
 )
 
+//local provider, stores information in local host memory
+//uses hash tables
+
 type LocalDataProvider struct {
 	TokenURLPare      map[string]string
 	TokenTimeStampMap map[string]int64
 	TokenLifeTime     int64
 }
+
+//saves url and token in hash table
+//parametres: url 
+//return: token
 
 func (LDP LocalDataProvider) SaveTokenURLPare(FullURL string) string {
 	var Token string = randstr.CreateRandomString(32)
@@ -20,6 +27,9 @@ func (LDP LocalDataProvider) SaveTokenURLPare(FullURL string) string {
 
 	return Token
 }
+
+//parametres: token
+//return: true if token isnt expired, false otherwise
 
 func (LDP LocalDataProvider) CheckTokenTimestamp(Token string) bool {
 	fmt.Println("checking " + Token + " token timestamp")
@@ -32,6 +42,9 @@ func (LDP LocalDataProvider) CheckTokenTimestamp(Token string) bool {
 
 	return Result
 }
+
+//parametres: url
+//return "" if the url hadn't contains in hash table
 
 func (LDP LocalDataProvider) CheckFullURL(FullURL string) string {
 	fmt.Println("trying to find token-URL pare")
@@ -48,11 +61,17 @@ func (LDP LocalDataProvider) CheckFullURL(FullURL string) string {
 	return Result
 }
 
+//delete pare by token
+//parametres: token
+
 func (LDP LocalDataProvider) DeleteTokenURLPare(Token string) {
 	fmt.Println("Deleted token ", Token)
 	delete(LDP.TokenURLPare, Token)
 	delete(LDP.TokenTimeStampMap, Token)
 }
+
+//parametres: token
+//return: url from hash table
 
 func (LDP LocalDataProvider) GetFullURLbyToken(Token string) string {
 	fmt.Println("trying to get full URL by token", Token)

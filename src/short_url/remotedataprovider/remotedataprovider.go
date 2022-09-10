@@ -5,11 +5,10 @@ import (
 	"fmt"
 	"time"
 	"main/common/randstr"
-	//"reflect"
-	//"strconv"
-	//"strings"
 	_ "github.com/lib/pq"
 )
+
+//contains information for database connection
 
 type DataBaseConnector struct {
 	User     string
@@ -17,6 +16,8 @@ type DataBaseConnector struct {
 	DBname   string
 	Sslmode  string
 }
+
+//connection to database
 
 func (DBC DataBaseConnector) Connect() *sql.DB {
 	connstr := "user=" + DBC.User + " password=" + DBC.Password + " dbname=" + DBC.DBname + " sslmode=" + DBC.Sslmode
@@ -28,15 +29,18 @@ func (DBC DataBaseConnector) Connect() *sql.DB {
 	if err != nil {
 		panic(err)
 	}
-	//defer DBDesc.Close()
 
 	return DBDesc
 }
+
+//contains pointer to database connection 
 
 type RemoteDataProvider struct {
 	DBConn *sql.DB
 	TokenLifeTime int64
 }
+
+//uses as tmpobject that contains information from database
 
 type Pare struct {
 	id int
@@ -45,13 +49,21 @@ type Pare struct {
 	timestamp int
 }
 
+//deletes all info from table
+
 func (RDP RemoteDataProvider) ClearDB() {
 	RDP.DBConn.Exec("DELETE from token_url_pare")
 }
 
+//closes connection
+
 func (RDP RemoteDataProvider) CloseConnection() {
 	RDP.DBConn.Close()
 }
+
+//saves token and url to database
+//parametser: url
+//return: token
 
 func (RDP RemoteDataProvider) SaveTokenURLPare(FullURL string) string {
 	Token := randstr.CreateRandomString(32)
@@ -66,6 +78,10 @@ func (RDP RemoteDataProvider) SaveTokenURLPare(FullURL string) string {
 
 	return Token
 }
+
+//selects url from database by token
+//parametres: token
+//return: url
 
 func (RDP RemoteDataProvider) GetFullURLbyToken(Token string) string {
 	var Result string
@@ -91,6 +107,10 @@ func (RDP RemoteDataProvider) GetFullURLbyToken(Token string) string {
 
 	return Result
 }
+
+//checks token lifetime
+//parametres: token
+//return: true if token isnt expired, false otherwise
 
 func (RDP RemoteDataProvider) CheckTokenTimestamp(Token string) bool {
 	Result := true
@@ -119,6 +139,9 @@ func (RDP RemoteDataProvider) CheckTokenTimestamp(Token string) bool {
 	return Result
 }
 
+//parametres: url
+//return "" if the url hadn't contains in hash table
+
 func (RDP RemoteDataProvider) CheckFullURL(FullURL string) string {
 	var Result string
 
@@ -143,6 +166,9 @@ func (RDP RemoteDataProvider) CheckFullURL(FullURL string) string {
 
 	return Result
 }
+
+//delete pare by token
+//parametres: token
 
 func (RDP RemoteDataProvider) DeleteTokenURLPare(Token string) {
 	result, err := RDP.DBConn.Exec("DELETE FROM token_url_pare WHERE token = $1", Token)
