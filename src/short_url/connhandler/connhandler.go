@@ -36,10 +36,12 @@ func (ConnHand ConnectionHandler) ServePOST(writer http.ResponseWriter, request 
 	UrlBuffer := make([]byte, 2048)
 	request.Body.Read(UrlBuffer)
 
-	Token := ConnHand.DataProvider.CheckFullURL(string(UrlBuffer))
+	TmpStr := string(UrlBuffer)
+
+	Token := ConnHand.DataProvider.CheckFullURL(strings.ReplaceAll(TmpStr, "\x00", ""))
 
 	if Token == "" {
-		Token = ConnHand.DataProvider.SaveTokenURLPare(string(UrlBuffer))
+		Token = ConnHand.DataProvider.SaveTokenURLPare(strings.ReplaceAll(TmpStr, "\x00", ""))
 	}
 
 	writer.Write([]byte(ConnHand.Protocol + "://" + ConnHand.Host + ":" + strconv.Itoa(ConnHand.Port) + "/" + Token))

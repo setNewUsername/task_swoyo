@@ -6,14 +6,16 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"main/connhandler"
-	"main/localdataprovider"
 	"net/http"
 	"os"
 	"os/signal"
 	"strconv"
 	"syscall"
 	"time"
+	"main/localdataprovider"
+	"main/connhandler"
+	"main/remotedataprovider"
+	"main/idataprovider"
 )
 
 //server functions
@@ -47,9 +49,37 @@ func shutdown(ctx context.Context, server *http.Server) {
 	}
 }
 
+func CreateLocalDataProviderInstance() localdataprovider.LocalDataProvider {
+
+	Result := localdataprovider.LocalDataProvider{
+		TokenURLPare:      make(map[string]string),
+		TokenTimeStampMap: make(map[string]int64),
+		TokenLifeTime:     60,
+	}
+
+	return Result
+}
+
+func CreateRemoteDataProviderInstance() remotedataprovider.RemoteDataProvider {
+	Result := remotedataprovider.RemoteDataProvider{TokenLifeTime: 60}
+	
+	DBC := remotedataprovider.DataBaseConnector{
+		User:     "test_user1",
+		Password: "one",
+		DBname:   "short_url_db",
+		Sslmode:  "disable",
+	}
+	
+	Result.DBConn = DBC.Connect()
+
+	return Result
+}
+
 //server functions
 
 func main() {
+	var DataProvider idataprovider.IDataProvider
+
 	var inputOption string = "none"
 	var serverPort int = 0
 
@@ -60,26 +90,22 @@ func main() {
 	switch inputOption {
 	case "storage_local":
 		fmt.Println("selected local storage method")
+		DataProvider = CreateLocalDataProviderInstance()
 		break
 	case "storage_db":
 		fmt.Println("selected database storage method")
+		DataProvider = CreateRemoteDataProviderInstance()
 		break
 	default:
 		fmt.Println("wrong storage method selected")
 		return
 	}
 
-	LDP := localdataprovider.LocalDataProvider{
-		TokenURLPare:      make(map[string]string),
-		TokenTimeStampMap: make(map[string]int64),
-		TokenLifeTime:     60,
-	}
-
 	ConnHan := connhandler.ConnectionHandler{
 		Protocol:     "http",
 		Host:         "localhost",
 		Port:         serverPort,
-		DataProvider: LDP,
+		DataProvider: DataProvider,
 	}
 
 	fmt.Println("starting " + ConnHan.Protocol + "://" + ConnHan.Host + " server at port " + strconv.Itoa(ConnHan.Port))
